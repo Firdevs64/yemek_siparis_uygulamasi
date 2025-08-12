@@ -1,39 +1,31 @@
-// React ve useState hook'unu import ediyoruz
 import React, { useState } from "react";
 
-// FoodForm bileşeni - Yeni yemek/içecek ekleme formu
-// Props: addFood (ekleme fonksiyonu), type (tür - "yemek" veya "içecek")
 function FoodForm({ addFood, type = "yemek" }) {
-  // Form input'u için state - Kullanıcının yazdığı metin
   const [name, setName] = useState("");
 
-  // Form submit işleyicisi
-  // e.preventDefault(): Sayfanın yenilenmesini engelle
-  // trim(): Başındaki ve sonundaki boşlukları temizle
-  // Validation: Boş metin kontrolü
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name.trim()) return; // Boşsa işlemi durdur
-    addFood({ name: name.trim(), description: "" }); // Yeni yemek/içecek ekle
-    setName(""); // Form'u temizle
+    if (!name.trim()) return;
+    
+    // Sadece 'name' alanını içeren bir obje gönderin.
+    // created_at alanı veritabanı tarafından otomatik olarak eklenecek.
+    await addFood({ name: name.trim() });
+    
+    setName("");
   };
 
-  // Dinamik placeholder metni - Tür'e göre değişir
   const placeholder = type === "içecek" ? "Yeni içecek adı" : "Yeni yemek adı";
 
   return (
     <form onSubmit={handleSubmit} className="food-form">
       <div className="form-row">
-        {/* Text input - Kullanıcı yemek/içecek adını yazar */}
         <input
           type="text"
           placeholder={placeholder}
-          value={name} // Controlled component - React state'i ile kontrol edilir
-          onChange={(e) => setName(e.target.value)} // Her yazı değişikliğinde state'i güncelle
+          value={name}
+          onChange={(e) => setName(e.target.value)}
           className="food-input"
         />
-        
-        {/* Submit butonu - Form'u gönderir */}
         <button type="submit" className="save-btn">
           KAYDET
         </button>
@@ -42,5 +34,4 @@ function FoodForm({ addFood, type = "yemek" }) {
   );
 }
 
-// Bileşeni dışa aktar
 export default FoodForm;

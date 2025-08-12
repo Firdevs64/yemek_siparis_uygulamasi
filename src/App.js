@@ -235,11 +235,10 @@ const deleteOrder = async (id) => {
 
 // Sipariş durumunu güncelleme fonksiyonu
 const updateOrderStatus = async (orderId, newStatus) => {
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from('orders')
     .update({ status: newStatus })
-    .eq('id', orderId)
-    .select();
+    .eq('id', orderId);
 
   if (error) {
     console.error("Sipariş durumu güncellenirken hata oluştu", error);

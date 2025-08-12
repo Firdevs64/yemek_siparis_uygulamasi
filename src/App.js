@@ -10,153 +10,29 @@ import FoodForm from "./components/FoodForm";
 // CSS stillerimizi import ediyoruz
 import "./App.css";
 
+//Supabase İstemcisini import ediyoruz
+import { supabase } from "./supabaseClient";
+
 // Ana uygulama bileşeni - Tüm uygulamanın merkezi
 function App() {
-  // LocalStorage'dan verileri yükleme fonksiyonu
-  // key: LocalStorage'da saklanan verinin anahtarı
-  // defaultValue: Eğer veri bulunamazsa kullanılacak varsayılan değer
-  const loadFromStorage = (key, defaultValue) => {
-    try {
-      const item = localStorage.getItem(key);
-      return item ? JSON.parse(item) : defaultValue;
-    } catch (error) {
-      console.error('LocalStorage yükleme hatası:', error);
-      return defaultValue;
-    }
-  };
 
-  // LocalStorage'a veri kaydet
-  const saveToStorage = (key, data) => {
-    try {
-      localStorage.setItem(key, JSON.stringify(data));
-    } catch (error) {
-      console.error('LocalStorage kaydetme hatası:', error);
-    }
-  };
-
-  // Yemek listesi state'i - useState hook'u ile tanımlıyoruz
-  // foods: Mevcut yemek listesi (array)
-  // setFoods: Yemek listesini güncellemek için fonksiyon
-  // useState(() => ...): Lazy initialization - Sadece ilk render'da çalışır
-  const [foods, setFoods] = useState(() => 
-    loadFromStorage('foods', [
-      { id: 1, name: "İstemiyorum", description: "" },
-      { id: 2, name: "Soğuk Sandviç", description: "" },
-      { id: 3, name: "Domates-Peynir Tost", description: "" },
-      { id: 4, name: "Karışık Tost", description: "" },
-      { id: 5, name: "Pizza", description: "" },
-      { id: 6, name: "Hamburger", description: "" },
-      { id: 7, name: "Patates Kızartması", description: "" },
-      { id: 8, name: "Sezar Salata", description: "" },
-      { id: 9, name: "Ton Balıklı Salata", description: "" },
-      { id: 10, name: "Tavuk Döner", description: "" },
-    ])
-  );
-
-  // Kullanıcı listesi state'i
-  // users: Mevcut kullanıcı listesi (array)
-  // setUsers: Kullanıcı listesini güncellemek için fonksiyon
-  const [users, setUsers] = useState(() => 
-    loadFromStorage('users', [
-      { id: 1, name: "Neslihan Lokman", office: "Ofis 1", password: "123" },
-      { id: 2, name: "Elif Sakar", office: "Ofis 1", password: "admin" },
-      { id: 3, name: "Şeval Pöze", office: "Ofis 2", password: "456" },
-      { id: 4, name: "Adem Köse", office: "Ofis 3", password: "789" },
-      { id: 5, name: "Eymen Köse", office: "Ofis 3", password: "101" },
-      { id: 6, name: "Emine Ceri", office: "Ofis 2", password: "123456" },
-      { id: 7, name: "Deniz Aren Toy", office: "Ofis 3", password: "101" },
-    ])
-  );
-
-  const [orders, setOrders] = useState(() => 
-    loadFromStorage('orders', [
-      { 
-        id: 1,
-        userId: 1, 
-        foodId: 4, 
-        quantity: 1, 
-        date: "2025-07-28",
-        time: "12:30",
-        status: "hazırlanıyor"
-      },
-      { 
-        id: 2,
-        userId: 1, 
-        foodId: 2, 
-        quantity: 1, 
-        date: "2025-07-28",
-        time: "12:30",
-        status: "hazır"
-      },
-      { 
-        id: 3,
-        userId: 3, 
-        foodId: 2, 
-        quantity: 1, 
-        date: "2025-07-28",
-        time: "13:15",
-        status: "teslim edildi"
-      },
-      { 
-        id: 4,
-        userId: 4, 
-        foodId: 5, 
-        quantity: 2, 
-        date: "2025-07-28",
-        time: "14:00",
-        status: "hazırlanıyor"
-      },
-      { 
-        id: 5,
-        userId: 5, 
-        foodId: 6, 
-        quantity: 1, 
-        date: "2025-07-28",
-        time: "14:30",
-        status: "hazır"
-      },
-      { 
-        id: 6,
-        userId: 5, 
-        foodId: 3, 
-        quantity: 1, 
-        date: "2025-07-28",
-        time: "14:30",
-        status: "hazırlanıyor"
-      },
-    ])
-  );
-
-  // İçecek listesi state'i
-  // drinks: Mevcut içecek listesi (array)
-  // setDrinks: İçecek listesini güncellemek için fonksiyon
-  const [drinks, setDrinks] = useState(() => 
-    loadFromStorage('drinks', [
-      { id: 1, name: "Su", description: "" },
-      { id: 2, name: "Çay", description: "" },
-      { id: 3, name: "Kahve", description: "" },
-      { id: 4, name: "Kola", description: "" },
-      { id: 5, name: "Ayran", description: "" },
-      { id: 6, name: "Meyve Suyu", description: "" },
-      { id: 7, name: "Soda", description: "" },
-      { id: 8, name: "Limonata", description: "" },
-    ])
-  );
+  const [foods, setFoods] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [drinks, setDrinks] = useState([]);
 
   // Yeni kullanıcı formu için state
   // newUser: Form'da girilen kullanıcı bilgileri
   // setNewUser: Form verilerini güncellemek için fonksiyon
-  const [newUser, setNewUser] = useState({ name: "", office: "", password: "" });
+  const [newUser, setNewUser] = useState({ full_name: "", office: "", email: "", password: "" });
   
   // Yeni sipariş formu için state
   // newOrder: Form'da girilen sipariş bilgileri
   // setNewOrder: Form verilerini güncellemek için fonksiyon
   const [newOrder, setNewOrder] = useState({ 
     userId: "", 
-    foodId: "", 
+    mealId: "", 
     drinkId: "",
-    foodQuantity: 1,
-    drinkQuantity: 1,
     date: new Date().toISOString().split('T')[0],
     time: new Date().toTimeString().slice(0, 5),
     status: "hazırlanıyor"
@@ -166,123 +42,227 @@ function App() {
   // useEffect: Bileşen render edildikten sonra çalışan fonksiyonlar
   // İkinci parametre [foods]: Sadece foods değiştiğinde çalışır
   
-  // Yemek listesi değiştiğinde LocalStorage'a kaydet
-  useEffect(() => {
-    saveToStorage('foods', foods);
-  }, [foods]);
+// Eski useEffect'leri tamamen kaldırın ve aşağıdaki bloğu ekleyin
+useEffect(() => {
+  // Yemekleri veritabanından çek
+  const fetchFoods = async () => {
+    let { data: foods, error } = await supabase.from('meals').select('*');
+    if (error) console.error("Yemekleri çekerken hata oluştu", error);
+    else setFoods(foods);
+  };
+  // İçecekleri veritabanından çek
+  const fetchDrinks = async () => {
+    let { data: drinks, error } = await supabase.from('drinks').select('*');
+    if (error) console.error("İçecekleri çekerken hata oluştu", error);
+    else setDrinks(drinks);
+  };
+  // Kullanıcıları veritabanından çek (şimdilik)
+  const fetchUsers = async () => {
+    let { data: users, error } = await supabase.from('profiles').select('*');
+    if (error) console.error("Kullanıcıları çekerken hata oluştu", error);
+    else setUsers(users);
+  };
+  // Siparişleri veritabanından çek
+  const fetchOrders = async () => {
+    let { data: orders, error } = await supabase.from('orders').select('*');
+    if (error) {
+      console.error("Siparişleri çekerken hata oluştu", error);
+      console.error("Hata detayları:", error.details);
+    } else {
+      console.log("Çekilen siparişler:", orders);
+      setOrders(orders);
+    }
+  };
 
-  // Kullanıcı listesi değiştiğinde LocalStorage'a kaydet
-  useEffect(() => {
-    saveToStorage('users', users);
-  }, [users]);
-
-  // Sipariş listesi değiştiğinde LocalStorage'a kaydet
-  useEffect(() => {
-    saveToStorage('orders', orders);
-  }, [orders]);
-
-  // İçecek listesi değiştiğinde LocalStorage'a kaydet
-  useEffect(() => {
-    saveToStorage('drinks', drinks);
-  }, [drinks]);
+  fetchFoods();
+  fetchDrinks();
+  fetchUsers();
+  fetchOrders();
+}, []); // Boş dependency array ile sadece ilk render'da çalışır.
+// Component'in başında
 
   // ===== CRUD FONKSİYONLARI (Create, Read, Update, Delete) =====
   
-  // Yeni yemek ekleme fonksiyonu
-  // food: Eklenecek yemek objesi
-  // ...foods: Mevcut yemek listesini kopyala
-  // Date.now(): Benzersiz ID oluştur
-  const addFood = (food) => {
-    setFoods([...foods, { ...food, id: Date.now() }]);
-  };
+// Yeni yemek ekleme fonksiyonu
+const addFood = async (food) => {
+  // FoodForm'dan gelen objeyi doğrudan kullanıyoruz. created_at'i eklemiyoruz.
+  const { data, error } = await supabase.from('meals').insert(food).select();
+  if (error) {
+    console.error("Yemek eklerken hata oluştu", error);
+  } else {
+    setFoods([...foods, ...data]);
+  }
+};
 
-  // Yemek silme fonksiyonu
-  // filter(): ID'si eşleşmeyen yemekleri yeni listeye ekle
-  const deleteFood = (id) => {
+// Yemek silme fonksiyonu
+const deleteFood = async (id) => {
+  const { error } = await supabase.from('meals').delete().eq('id', id);
+  if (error) {
+    console.error("Yemek silerken hata oluştu", error);
+  } else {
+    // Başarılı olursa, state'i güncelle
     setFoods(foods.filter((food) => food.id !== id));
-  };
+  }
+};
 
-  // Yeni içecek ekleme fonksiyonu
-  const addDrink = (drink) => {
-    setDrinks([...drinks, { ...drink, id: Date.now() }]);
-  };
+// Yeni içecek ekleme fonksiyonu
+const addDrink = async (drink) => {
+  // FoodForm'dan gelen objeyi doğrudan kullanıyoruz. created_at'i eklemiyoruz.
+  const { data, error } = await supabase.from('drinks').insert(drink).select();
+  if (error) {
+    console.error("İçecek eklerken hata oluştu", error);
+  } else {
+    setDrinks([...drinks, ...data]);
+  }
+};
 
-  // İçecek silme fonksiyonu
-  const deleteDrink = (id) => {
+// İçecek silme fonksiyonu
+const deleteDrink = async (id) => {
+  const { error } = await supabase.from('drinks').delete().eq('id', id);
+  if (error) {
+    console.error("İçecek silerken hata oluştu", error);
+  } else {
     setDrinks(drinks.filter((drink) => drink.id !== id));
-  };
+  }
+};
 
-  // Sipariş silme fonksiyonu
-  const deleteOrder = (id) => {
-    setOrders(orders.filter((order) => order.id !== id));
-  };
+const addUser = async (user) => {
+  // 1. Supabase Auth servisine kullanıcıyı kaydet
+  const { data: authData, error: authError } = await supabase.auth.signUp({
+    email: user.email, // E-posta eklenmeli!
+    password: user.password,
+  });
 
-  // Yeni kullanıcı ekleme fonksiyonu
-  // Form'u temizlemek için setNewUser kullanıyoruz
-  const addUser = (user) => {
-    setUsers([...users, { ...user, id: Date.now() }]);
-    setNewUser({ name: "", office: "", password: "" });
-  };
+  if (authError || !authData?.user) {
+    console.error("Kayıt olurken hata oluştu:", authError?.message || "Kullanıcı oluşturulamadı.");
+    return;
+  }
 
-  // Kullanıcı silme fonksiyonu
-  const deleteUser = (id) => {
+  // 2. Profil tablosuna bilgileri ekle
+  const { data: profileData, error: profileError } = await supabase
+    .from('profiles')
+    .insert([
+      {
+        id: authData.user.id,
+        full_name: user.full_name,
+        office: user.office,
+      },
+    ])
+    .select();
+
+  if (profileError) {
+    console.error("Profil oluştururken hata oluştu:", profileError.message);
+  } else {
+    setUsers([...users, ...profileData]);
+    setNewUser({ full_name: "", office: "", email: "", password: "" }); // Formu temizle
+  }
+};
+
+
+// Kullanıcı silme fonksiyonu
+const deleteUser = async (id) => {
+  const { error } = await supabase.from('profiles').delete().eq('id', id);
+  if (error) {
+    console.error("Kullanıcı silerken hata oluştu", error);
+  } else {
     setUsers(users.filter((user) => user.id !== id));
-  };
+  }
+};
 
-  // Yeni sipariş ekleme fonksiyonu
-  // order: Form'dan gelen sipariş verisi
-  // Number(): String değerleri sayıya çevir (parseInt yerine daha güvenli)
-  // Form'u temizlemek için setNewOrder kullanıyoruz
-  const addOrder = (order) => {
-    setOrders([...orders, { 
-      ...order, 
-      id: Date.now(),
-      userId: Number(order.userId),
-      foodId: Number(order.foodId),
-      drinkId: order.drinkId ? Number(order.drinkId) : null,
-      foodQuantity: Number(order.foodQuantity) || 1,  //foodQuantity: yemekten kaç tane sipariş edildiğini belirtmek için kullanılan bir değişkendir.
-      drinkQuantity: order.drinkId ? Number(order.drinkQuantity) || 1 : 0, //drinkQuantity: içecekten kaç tane sipariş edildiğini belirtmek için kullanılan bir değişkendir.
-      status: "hazırlanıyor"
-    }]);
-    setNewOrder({ 
-      userId: "", 
-      foodId: "", 
+// Yeni sipariş ekleme fonksiyonu
+const addOrder = async (order) => {
+  // Form'dan gelen userId'yi kullan (oturum kullanıcısı değil)
+  if (!order.userId) {
+    alert("Lütfen bir kullanıcı seçin.");
+    return;
+  }
+
+  if (!order.mealId) {
+    alert("Lütfen bir yemek seçin.");
+    return;
+  }
+
+  // Debug için veriyi konsola yazdır
+  console.log("Gönderilecek sipariş verisi:", order);
+
+  // Veritabanı şemasına göre sadece mevcut sütunları kullan
+  const newOrderData = {
+    user_id: order.userId,
+    meal_id: order.mealId,
+    order_date: new Date().toISOString(),
+    status: "hazırlanıyor"
+  };
+  
+  // Eğer içecek seçildiyse ekle
+  if (order.drinkId) {
+    newOrderData.drink_id = order.drinkId;
+  }
+
+  // Debug için veritabanına gönderilecek veriyi konsola yazdır
+  console.log("Veritabanına gönderilecek veri:", newOrderData);
+
+  const { data, error } = await supabase.from('orders').insert(newOrderData).select();
+
+  if (error) {
+    console.error("Sipariş eklerken hata oluştu", error);
+    console.error("Hata detayları:", error.details);
+    console.error("Hata mesajı:", error.message);
+    alert(`Sipariş eklenirken hata oluştu: ${error.message}`);
+  } else {
+    console.log("Başarıyla eklenen sipariş:", data);
+    setOrders([...orders, ...data]);
+    // Formu tamamen temizle
+    setNewOrder({
+      userId: "",
+      mealId: "",
       drinkId: "",
-      foodQuantity: 1,
-      drinkQuantity: 1,
-      date: new Date().toISOString().split('T')[0],  //toISOString(): Tarihi ISO formatına çevirir.
+      date: new Date().toISOString().split('T')[0],
       time: new Date().toTimeString().slice(0, 5),
       status: "hazırlanıyor"
     });
-  };
+  }
+};
 
-  // Sipariş durumunu güncelleme fonksiyonu
-  // orderId: Güncellenecek siparişin ID'si
-  // newStatus: Yeni durum
-  // map(): Tüm siparişleri döngüye al, eşleşen ID'yi güncelle
-  const updateOrderStatus = (orderId, newStatus) => {
+// Sipariş silme fonksiyonu
+const deleteOrder = async (id) => {
+  const { error } = await supabase.from('orders').delete().eq('id', id);
+  if (error) {
+    console.error("Sipariş silerken hata oluştu", error);
+  } else {
+    setOrders(orders.filter((order) => order.id !== id));
+  }
+};
+
+// Sipariş durumunu güncelleme fonksiyonu
+const updateOrderStatus = async (orderId, newStatus) => {
+  const { data, error } = await supabase
+    .from('orders')
+    .update({ status: newStatus })
+    .eq('id', orderId)
+    .select();
+
+  if (error) {
+    console.error("Sipariş durumu güncellenirken hata oluştu", error);
+  } else {
     setOrders(orders.map(order => 
       order.id === orderId ? { ...order, status: newStatus } : order
     ));
-  };
+  }
+};
 
-  // Form submit işleyicileri
-  // e.preventDefault(): Sayfanın yenilenmesini engelle
-  // Validation: Boş alan kontrolü
-  
-  // Kullanıcı formu submit işleyicisi
-  const handleUserSubmit = (e) => {
-    e.preventDefault();
-    if (!newUser.name || !newUser.office || !newUser.password) return;
-    addUser(newUser);
-  };
+// Kullanıcı formu submit işleyicisi
+const handleUserSubmit = async (e) => {
+  e.preventDefault();
+  if (!newUser.full_name || !newUser.office || !newUser.email || !newUser.password) return;
+  await addUser(newUser);
+};
 
-  // Sipariş formu submit işleyicisi
-  const handleOrderSubmit = (e) => {
-    e.preventDefault();
-    if (!newOrder.userId || !newOrder.foodId) return; // Sadece kullanıcı ve yemek zorunlu
-    addOrder(newOrder);
-  };
+// Sipariş formu submit işleyicisi
+const handleOrderSubmit = async (e) => {
+  e.preventDefault();
+  if (!newOrder.mealId) return; // Sadece yemek zorunlu
+  await addOrder(newOrder);
+};
 
   // ===== HESAPLAMA FONKSİYONLARI =====
   
@@ -294,19 +274,21 @@ function App() {
     const officeUsers = users.filter(user => user.office === `Ofis ${officeNumber}`);
     const officeOrderIds = officeUsers.map(user => user.id);
     
-    const officeOrders = orders.filter(order => officeOrderIds.includes(order.userId));
+    const officeOrders = orders.filter(order => officeOrderIds.includes(order.user_id));
     
-    const orderSummary = {}; //orderSummary: ofis siparişlerinin toplamını tutmak için kullanılan bir değişkendir.Sipariş özeti
+    const orderSummary = {}; //orderSummary: ofis siparişlerinin toplamını tutmak için kullanılan bir değişkendir.Sipabase timestamptz için
     officeOrders.forEach(order => {
-      const food = foods.find(f => f.id === order.foodId);
+      const food = foods.find(f => f.id === order.meal_id);
       if (food) {
-        orderSummary[food.name] = (orderSummary[food.name] || 0) + (order.foodQuantity || 1);
+        // Quantity sütunu olmadığı için her siparişi 1 olarak say
+        orderSummary[food.name] = (orderSummary[food.name] || 0) + 1;
       }
       
-      if (order.drinkId) {
-        const drink = drinks.find(d => d.id === order.drinkId);
+      if (order.drink_id) {
+        const drink = drinks.find(d => d.id === order.drink_id);
         if (drink) {
-          orderSummary[drink.name] = (orderSummary[drink.name] || 0) + (order.drinkQuantity || 1);
+          // Quantity sütunu olmadığı için her siparişi 1 olarak say
+          orderSummary[drink.name] = (orderSummary[drink.name] || 0) + 1;
         }
       }
     });
@@ -319,22 +301,20 @@ function App() {
     const preferences = []; //preferences: kullanıcı tercihlerini tutmak için kullanılan bir değişkendir.
     
     orders.forEach(order => {
-      const user = users.find(u => u.id === order.userId);
-      const food = foods.find(f => f.id === order.foodId);
-      const drink = order.drinkId ? drinks.find(d => d.id === order.drinkId) : null;
+      const user = users.find(u => u.id === order.user_id);
+      const food = foods.find(f => f.id === order.meal_id);
+      const drink = order.drink_id ? drinks.find(d => d.id === order.drink_id) : null;
       
       // Sadece teslim edilmemiş siparişleri göster
       if (user && food && order.status !== "teslim edildi") {
         preferences.push({
           id: order.id,
-          userId: order.userId,
-          userName: user.name,
+          userId: order.user_id,
+          userName: user.full_name,
           foodName: food.name,
-          foodQuantity: order.foodQuantity || 1,
           drinkName: drink ? drink.name : null,
-          drinkQuantity: order.drinkQuantity || 0,
-          date: order.date,
-          time: order.time,
+          date: new Date(order.order_date).toLocaleDateString('tr-TR'),
+          time: new Date(order.order_date).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }),
           status: order.status
         });
       }
@@ -360,6 +340,33 @@ function App() {
       default: return "hazırlanıyor";
     }
   };
+
+  // Veritabanı tablo yapısını test et
+  const testDatabaseStructure = async () => {
+    console.log("=== VERİTABANI YAPISI TEST ===");
+    
+    // Orders tablosu yapısını kontrol et
+    const { data: ordersData, error: ordersError } = await supabase.from('orders').select('*').limit(1);
+    console.log("Orders tablosu örnek veri:", ordersData);
+    if (ordersError) console.error("Orders tablosu hatası:", ordersError);
+    
+    // Meals tablosu yapısını kontrol et
+    const { data: mealsData, error: mealsError } = await supabase.from('meals').select('*').limit(1);
+    console.log("Meals tablosu örnek veri:", mealsData);
+    if (mealsError) console.error("Meals tablosu hatası:", mealsError);
+    
+    // Profiles tablosu yapısını kontrol et
+    const { data: profilesData, error: profilesError } = await supabase.from('profiles').select('*').limit(1);
+    console.log("Profiles tablosu örnek veri:", profilesData);
+    if (profilesError) console.error("Profiles tablosu hatası:", profilesError);
+    
+    console.log("=== TEST TAMAMLANDI ===");
+  };
+
+  // Sayfa yüklendiğinde veritabanı yapısını test et
+  useEffect(() => {
+    testDatabaseStructure();
+  }, []);
 
   const office1Orders = getOfficeOrders(1);
   const office2Orders = getOfficeOrders(2);
@@ -405,13 +412,13 @@ function App() {
               <option value="">KULLANICI SEÇİN</option>
               {users.map(user => (
                 <option key={user.id} value={user.id}>
-                  {user.name} - {user.office}
+                  {user.full_name}
                 </option>
               ))}
             </select>
             <select
-              value={newOrder.foodId}
-              onChange={(e) => setNewOrder({...newOrder, foodId: e.target.value})}
+              value={newOrder.mealId}
+              onChange={(e) => setNewOrder({...newOrder, mealId: e.target.value})}
               className="order-input"
             >
               <option value="">YEMEK SEÇİN</option>
@@ -421,14 +428,7 @@ function App() {
                 </option>
               ))}
             </select>
-            <input
-              type="number"
-              placeholder="Yemek Adet"
-              value={newOrder.foodQuantity}
-              onChange={(e) => setNewOrder({...newOrder, foodQuantity: parseInt(e.target.value) || 1})}
-              className="order-input"
-              min="1"
-            />
+
           </div>
           <div className="form-row">
             <select
@@ -443,14 +443,7 @@ function App() {
                 </option>
               ))}
             </select>
-            <input
-              type="number"
-              placeholder="İçecek Adet"
-              value={newOrder.drinkQuantity}
-              onChange={(e) => setNewOrder({...newOrder, drinkQuantity: parseInt(e.target.value) || 1})}
-              className="order-input"
-              min="1"
-            />
+
             <input
               type="date"
               value={newOrder.date}
@@ -551,7 +544,7 @@ function App() {
               <tbody>
                 {users.map((user) => (
                   <tr key={user.id}>
-                    <td>{user.name}</td>
+                    <td>{user.full_name}</td>
                     <td>{user.office}</td>
                     <td>
                       <button 
@@ -574,8 +567,8 @@ function App() {
             <input
               type="text"
               placeholder="AD SOYAD"
-              value={newUser.name}
-              onChange={(e) => setNewUser({...newUser, name: e.target.value})}
+              value={newUser.full_name}
+              onChange={(e) => setNewUser({...newUser, full_name: e.target.value})}
               className="user-input"
             />
             <select
@@ -588,6 +581,13 @@ function App() {
               <option value="Ofis 2">Ofis 2</option>
               <option value="Ofis 3">Ofis 3</option>
             </select>
+            <input
+              type="email"
+              value={newUser.email}
+              onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+              placeholder="E-POSTA"
+              required
+            />
             <input
               type="password"
               placeholder="ŞİFRE"
@@ -603,30 +603,30 @@ function App() {
         </div>
       </div>
 
-      <div className="preference-section">
+      <div className="preference-section" id="tercih-listesi">
         <h2>TERCİH LISTESI</h2>
         <div className="preference-table">
           <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Ad Soyad</th>
-                <th>Yemek (Adet)</th>
-                <th>İçecek (Adet)</th>
-                <th>Tarih</th>
-                <th>Saat</th>
-                <th>Durum</th>
-                <th>İşlem</th>
-                <th></th>
-              </tr>
-            </thead>
+                          <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Ad Soyad</th>
+                  <th>Yemek</th>
+                  <th>İçecek</th>
+                  <th>Tarih</th>
+                  <th>Saat</th>
+                  <th>Durum</th>
+                  <th>İşlem</th>
+                  <th></th>
+                </tr>
+              </thead>
             <tbody>
               {userPreferences.map((pref, index) => (
                 <tr key={pref.id}>
                   <td>{index + 1}</td>
                   <td>{pref.userName}</td>
-                  <td>{pref.foodName} ({pref.foodQuantity})</td>
-                  <td>{pref.drinkName ? `${pref.drinkName} (${pref.drinkQuantity})` : "-"}</td>
+                  <td>{pref.foodName}</td>
+                  <td>{pref.drinkName || "-"}</td>
                   <td>{pref.date}</td>
                   <td>{pref.time}</td>
                   <td>

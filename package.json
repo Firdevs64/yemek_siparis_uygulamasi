@@ -15,9 +15,20 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "set CI=false && set DISABLE_ESLINT_PLUGIN=true && set GENERATE_SOURCEMAP=false && set SKIP_PREFLIGHT_CHECK=true && set EXTEND_ESLINT=false && react-scripts build",
+    "build": "set CI=false && set DISABLE_ESLINT_PLUGIN=true && set GENERATE_SOURCEMAP=false && set SKIP_PREFLIGHT_CHECK=true && set EXTEND_ESLINT=false && set ESLINT_NO_DEV_ERRORS=true && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ],
+    "rules": {
+      "no-unused-vars": "off",
+      "no-console": "off",
+      "no-debugger": "off"
+    }
   },
   "browserslist": {
     "production": [

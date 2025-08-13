@@ -15,7 +15,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "set CI=false && set DISABLE_ESLINT_PLUGIN=true && set GENERATE_SOURCEMAP=false && react-scripts build",
+    "build": "set CI=false && set DISABLE_ESLINT_PLUGIN=true && set GENERATE_SOURCEMAP=false && set SKIP_PREFLIGHT_CHECK=true && set EXTEND_ESLINT=false && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
